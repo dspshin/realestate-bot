@@ -23,10 +23,93 @@ def help(id):
  ex. /howmuch 11710 201603 잠실
 /loc 지역명 : 지역코드 검색.
  ex. /loc 송파
-/noti add : 구현 중...
-/noti list
-/noti remove
+/noti add 지역코드 필터 : 노티 등록. howmuch의 사용법과 유사하며, 해당 결과가 있을 경우 매일 아침에 전송함(필터생략가능).
+ ex. /noti add 11710 잠실
+/noti list : 노티 리스트 조회.
+/noti remove 아이디 : 노티 제거.
 ''')
+
+def howmuch(loc_param, date_param, filter_param):
+    res_list = []
+    res=''
+    printed = False
+    request = Request(url+'&LAWD_CD='+loc_param+'&DEAL_YMD='+date_param)
+    request.get_method = lambda: 'GET'
+    try:
+        res_body = urlopen(request).read()
+    except UnicodeEncodeError:
+        res = ['API에서 발생했습니다. 명령어를 정확히 사용했는지 확인해 보세요.']
+        return res
+    soup = BeautifulSoup(res_body, 'html.parser')
+    items = soup.findAll('item')
+    for item in items:
+        item = item.text.encode('utf-8')
+        item = re.sub('<.*?>', '|', item)
+        parsed = item.split('|')
+        try:
+            row = parsed[2]+'/'+parsed[5]+'/'+parsed[6]+', '+parsed[3]+' '+parsed[4]+', '+parsed[7]+'m², '+parsed[9]+'F, '+parsed[1].strip()+'만원\n'
+        except IndexError:
+            row = item.replace('|', ',')
+        if filter_param and row.find(filter_param)<0:
+            row = ''
+        #print row
+        if len(res+row)>400: # becuz of telegram 400 char restrict
+            res_list.append(res)
+            res=row
+            printed = True
+        else:
+            res+=row
+    if res:
+        res_list.append(res)
+    elif not printed:
+        res_list = ['조회 결과가 없습니다.']
+    return res_list
+
+def noti(command, subparam, user):
+    conn = sqlite3.connect('user.db')
+    c = conn.cursor()
+    c.execute('CREATE TABLE IF NOT EXISTS user(id INTEGER PRIMARY KEY AUTOINCREMENT, user TEXT, command TEXT)')
+
+    if command=='add':
+        if not subparam:
+            return False
+        try:
+            c.execute('INSERT INTO user (user,command) VALUES ("%s", "%s")'%(user, subparam))
+            conn.commit()
+        except:
+            bot.sendMessage(user, 'DB에러가 발생했습니다. 명렁어에 에러가 있나 살펴보시거나 잠시 후에 사용해 주세요.')
+        else:
+            bot.sendMessage(user, '성공적으로 추가되었습니다. /noti list로 확인 가능합니다.')
+        return True
+    if command=='list':
+        res=''
+        printed = False
+        c.execute('SELECT * from user WHERE user="%s"'%user)
+        for data in c.fetchall():
+            row = str(data[0])+', '+data[2]+'\n'
+            if len(row+res)>400:
+                bot.sendMessage(user, res)
+                res=row
+                printed = True
+            else:
+                res+=row
+        if res:
+            bot.sendMessage(user, res)
+        elif not printed:
+            bot.sendMessage(user, '조회 결과가 없습니다.')
+        return True
+    if command=='remove':
+        if not subparam:
+            return False
+        try:
+            c.execute('DELETE FROM user WHERE user="%s" AND id=%s'%(user, subparam))
+            conn.commit()
+        except:
+            bot.sendMessage(user, 'DB에러가 발생했습니다. 명렁어에 에러가 있나 살펴보시거나 잠시 후에 사용해 주세요.')
+        else:
+            bot.sendMessage(user, '성공적으로 제거되었습니다. /noti list로 확인 가능합니다.')
+        return True
+    return False
 
 def handle(msg):
     conn = sqlite3.connect('loc.db')
@@ -61,44 +144,21 @@ def handle(msg):
                 else:
                     today = date.today()
                     date_param = today.strftime('%Y%m')
-                filter=''
+                filter_param=''
                 if len(args)>3:
-                    filter = args[3].encode('utf-8')
-                res=''
-                printed = False
-                request = Request(url+'&LAWD_CD='+loc_param+'&DEAL_YMD='+date_param)
-                request.get_method = lambda: 'GET'
-                try:
-                    res_body = urlopen(request).read()
-                except UnicodeEncodeError:
-                    res = 'API에서 유니코드에러가 발생했습니다... --;'
-                soup = BeautifulSoup(res_body, 'html.parser')
-                items = soup.findAll('item')
-                for item in items:
-                    item = item.text.encode('utf-8')
-                    item = re.sub('<.*?>', '|', item)
-                    parsed = item.split('|')
-                    try:
-                        row = parsed[2]+'/'+parsed[5]+'/'+parsed[6]+', '+parsed[3]+' '+parsed[4]+', '+parsed[7]+'m², '+parsed[9]+'F, '+parsed[1].strip()+'만원\n'
-                    except IndexError:
-                        row = item.replace('|', ',')
-                    if filter and row.find(filter)<0:
-                        row = ''
-                    #print row
-                    if len(res+row)>400: # becuz of telegram 400 char restrict
-                        bot.sendMessage(chat_id, res)
-                        res=row
-                        printed = True
-                    else:
-                        res+=row
-                if res:
+                    filter_param = args[3].encode('utf-8')
+                res_list = howmuch( loc_param, date_param, filter_param )
+                for res in res_list:
                     bot.sendMessage(chat_id, res)
-                elif not printed:
-                    bot.sendMessage(chat_id, '조회 결과가 없습니다.')
                 return
 
         if text.startswith('/noti'):
-            pass
+            if len(args)>1:
+                command = args[1]
+                subparam = text.split(command)[1].strip()
+                res = noti(command, subparam, chat_id)
+                if res:
+                    return
 
     help(chat_id)
 
