@@ -68,14 +68,20 @@ def handle(msg):
                 printed = False
                 request = Request(url+'&LAWD_CD='+loc_param+'&DEAL_YMD='+date_param)
                 request.get_method = lambda: 'GET'
-                res_body = urlopen(request).read()
+                try:
+                    res_body = urlopen(request).read()
+                except UnicodeEncodeError:
+                    res = 'API에서 유니코드에러가 발생했습니다... --;'
                 soup = BeautifulSoup(res_body, 'html.parser')
                 items = soup.findAll('item')
                 for item in items:
                     item = item.text.encode('utf-8')
                     item = re.sub('<.*?>', '|', item)
                     parsed = item.split('|')
-                    row = parsed[2]+'/'+parsed[5]+'/'+parsed[6]+', '+parsed[3]+' '+parsed[4]+', '+parsed[7]+'m², '+parsed[9]+'F, '+parsed[1].strip()+'만원\n'
+                    try:
+                        row = parsed[2]+'/'+parsed[5]+'/'+parsed[6]+', '+parsed[3]+' '+parsed[4]+', '+parsed[7]+'m², '+parsed[9]+'F, '+parsed[1].strip()+'만원\n'
+                    except IndexError:
+                        row = item.replace('|', ',')
                     if filter and row.find(filter)<0:
                         row = ''
                     #print row
