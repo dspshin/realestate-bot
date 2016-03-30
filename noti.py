@@ -50,11 +50,14 @@ def runNoti(date_param):
     c = conn.cursor()
     c.execute('SELECT user,command from user') # get all comamnds
     for data in c.fetchall():
+        filter_param=None
         user = data[0].encode('utf-8')
         command = data[1].encode('utf-8')
         params = command.split(' ')
         print user, date_param, params
-        res_list = howmuch( params[0], date_param, params[1] )
+        if len(params)>1:
+            filter_param = params[1]
+        res_list = howmuch( params[0], date_param, filter_param )
         for r in res_list:
             try:
                 c2.execute('INSERT INTO logs (user,log) VALUES ("%s", "%s")'%(user,r))
