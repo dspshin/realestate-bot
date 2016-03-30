@@ -77,17 +77,17 @@ def runNoti(date_param):
 
     conn2.commit()
 
-TOKEN = sys.argv[1]
-print 'received token :', TOKEN
-
-bot = telepot.Bot(TOKEN)
-pprint( bot.getMe() )
-
 today = date.today()
 current_month = today.strftime('%Y%m')
 now=datetime.now()
 past=datetime(now.year, now.month, 1) - timedelta(days=1)
 prev_month="%d%02d"%(past.year,past.month)
+
+TOKEN = sys.argv[1]
+print '[',today,']received token :', TOKEN
+
+bot = telepot.Bot(TOKEN)
+pprint( bot.getMe() )
 
 runNoti(prev_month)
 runNoti(current_month)
