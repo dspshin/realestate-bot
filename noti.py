@@ -58,6 +58,7 @@ def runNoti(date_param):
         if len(params)>1:
             filter_param = params[1]
         res_list = howmuch( params[0], date_param, filter_param )
+        msg = ''
         for r in res_list:
             try:
                 c2.execute('INSERT INTO logs (user,log) VALUES ("%s", "%s")'%(user,r))
@@ -66,7 +67,13 @@ def runNoti(date_param):
                 pass
             else:
                 print str(datetime.now()).split('.')[0], r
-                bot.sendMessage( user, r )
+                if len(r+msg+1)>400:
+                    bot.sendMessage( user, msg )
+                    msg = r+'\n'
+                else:
+                    msg += r+'\n'
+        if msg:
+            bot.sendMessage( user, msg )
 
     conn2.commit()
 
