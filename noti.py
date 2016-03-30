@@ -67,7 +67,7 @@ def runNoti(date_param):
                 pass
             else:
                 print str(datetime.now()).split('.')[0], r
-                if len(r+msg+1)>400:
+                if len(r+msg)+1>400:
                     bot.sendMessage( user, msg )
                     msg = r+'\n'
                 else:
