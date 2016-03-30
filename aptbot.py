@@ -86,7 +86,7 @@ def noti(command, subparam, user):
         printed = False
         c.execute('SELECT * from user WHERE user="%s"'%user)
         for data in c.fetchall():
-            row = str(data[0])+', '+data[2]+'\n'
+            row = 'id:'+str(data[0])+', command:'+data[2]+'\n'
             if len(row+res)>400:
                 bot.sendMessage(user, res)
                 res=row
