@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 
 key = 'mcGA6xDEsvdIH3sbow%2B7gIBwxcGJC4dTkHt%2Bd7DXJ2pg2Gqq3g6IvU%2BLwFKCiqOQncYX2uI2Kav1yzRw7WO1RA%3D%3D'
 url = 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptTrade?ServiceKey='+key
+ROOT = '/root/git/realestate-bot/'
 
 def howmuch(loc_param, date_param, filter_param):
     res_list = []
@@ -40,12 +41,12 @@ def howmuch(loc_param, date_param, filter_param):
     return res_list
 
 def runNoti(date_param):
-    conn2 = sqlite3.connect('logs.db')
+    conn2 = sqlite3.connect(ROOT+'logs.db')
     c2 = conn2.cursor()
     c2.execute('CREATE TABLE IF NOT EXISTS logs( user TEXT, log TEXT, PRIMARY KEY(user, log) )')
     conn2.commit()
 
-    conn = sqlite3.connect('user.db')
+    conn = sqlite3.connect(ROOT+'user.db')
     c = conn.cursor()
     c.execute('SELECT user,command from user') # get all comamnds
     for data in c.fetchall():
