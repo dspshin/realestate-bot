@@ -23,7 +23,7 @@ def help(id):
  ex. /howmuch 11710 201603 잠실
 /loc 지역명 : 지역코드 검색.
  ex. /loc 송파
-/noti add 지역코드 필터 : 노티 등록. howmuch의 사용법과 유사하며, 해당 결과가 있을 경우 매일 아침에 전송함(필터생략가능. 첫노티는 전달 데이터도 전송됩니다).
+/noti add 지역코드 필터 : 노티 등록. howmuch의 사용법과 유사하며, 해당 결과가 있을 경우 매일 아침에 전송함(필터생략가능. 첫 노티는 전월 데이터도 전송됩니다).
  ex. /noti add 11710 잠실
 /noti list : 노티 리스트 조회.
 /noti remove 아이디 : 노티 제거.
@@ -38,7 +38,7 @@ def howmuch(loc_param, date_param, filter_param):
     try:
         res_body = urlopen(request).read()
     except UnicodeEncodeError:
-        res = ['API에서 발생했습니다. 명령어를 정확히 사용했는지 확인해 보세요.']
+        res = ['오류가 발생했습니다. 명령어를 정확히 사용했는지 확인해 보세요.']
         return res
     soup = BeautifulSoup(res_body, 'html.parser')
     items = soup.findAll('item')
