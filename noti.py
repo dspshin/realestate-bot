@@ -11,6 +11,7 @@ from urllib import urlencode, quote_plus
 from bs4 import BeautifulSoup
 import re
 from datetime import datetime, timedelta
+import traceback
 
 key = 'mcGA6xDEsvdIH3sbow%2B7gIBwxcGJC4dTkHt%2Bd7DXJ2pg2Gqq3g6IvU%2BLwFKCiqOQncYX2uI2Kav1yzRw7WO1RA%3D%3D'
 url = 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptTrade?ServiceKey='+key
@@ -40,6 +41,12 @@ def howmuch(loc_param, date_param, filter_param):
             res_list.append(row.strip())
     return res_list
 
+def sendMessage(user,msg):
+    try:
+        bot.sendMessage(user,msg)
+    except:
+        traceback.print_exc(file=sys.stdout)
+
 def runNoti(date_param):
     conn2 = sqlite3.connect(ROOT+'logs.db')
     c2 = conn2.cursor()
@@ -68,12 +75,12 @@ def runNoti(date_param):
             else:
                 print str(datetime.now()).split('.')[0], r
                 if len(r+msg)+1>400:
-                    bot.sendMessage( user, msg )
+                    sendMessage( user, msg )
                     msg = r+'\n'
                 else:
                     msg += r+'\n'
         if msg:
-            bot.sendMessage( user, msg )
+            sendMessage( user, msg )
 
     conn2.commit()
 
