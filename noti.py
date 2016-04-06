@@ -15,7 +15,9 @@ import traceback
 key = 'mcGA6xDEsvdIH3sbow%2B7gIBwxcGJC4dTkHt%2Bd7DXJ2pg2Gqq3g6IvU%2BLwFKCiqOQncYX2uI2Kav1yzRw7WO1RA%3D%3D'
 url = 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptTrade?ServiceKey='+key
 ROOT = '/root/git/realestate-bot/'
-MAX_MSG_LENGTH = 400
+
+#텔레그램 상으로는 4096까지 지원함. 가독성상 1000정도로 끊자.
+MAX_MSG_LENGTH = 1000
 
 def howmuch(loc_param, date_param, filter_param):
     res_list = []
