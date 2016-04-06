@@ -5,17 +5,29 @@ import time
 import sqlite3
 import telepot
 from pprint import pprint
-from datetime import date
+from datetime import date, datetime
 from urllib2 import Request, urlopen
 from urllib import urlencode, quote_plus
 from bs4 import BeautifulSoup
 import re
+import traceback
 
 key = 'mcGA6xDEsvdIH3sbow%2B7gIBwxcGJC4dTkHt%2Bd7DXJ2pg2Gqq3g6IvU%2BLwFKCiqOQncYX2uI2Kav1yzRw7WO1RA%3D%3D'
 url = 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptTrade?ServiceKey='+key
 
+#텔레그램 상으로는 4096까지 지원함. 가독성상 1000정도로 끊자.
+MAX_MSG_LENGTH = 1000
+
+
+def sendMessage(id, msg):
+    try:
+        bot.sendMessage(id, msg)
+    except:
+        print str(datetime.now()).split('.')[0]
+        traceback.print_exc(file=sys.stdout)
+
 def help(id):
-    bot.sendMessage(id, '''명령어 사용법:
+    sendMessage(id, '''명령어 사용법:
 /howmuch 지역코드 년월 필터 : 해당 지역의 월 거래를 확인하며, 필터를 포함하는 정보를 조회합니다.
  (년월이 생략되면 현재 월로 설정되며, 필터가 생략되면 전체 구/군의 정보가 나옵니다.)
  ex. /howmuch 11710 201603
@@ -53,7 +65,7 @@ def howmuch(loc_param, date_param, filter_param):
         if filter_param and row.find(filter_param)<0:
             row = ''
         #print row
-        if len(res+row)>400: # becuz of telegram 400 char restrict
+        if len(res+row)>MAX_MSG_LENGTH: # becuz of telegram max msg length restrict
             res_list.append(res)
             res=row
             printed = True
@@ -77,9 +89,9 @@ def noti(command, subparam, user):
             c.execute('INSERT INTO user (user,command) VALUES ("%s", "%s")'%(user, subparam))
             conn.commit()
         except:
-            bot.sendMessage(user, 'DB에러가 발생했습니다. 명렁어에 에러가 있나 살펴보시거나 잠시 후에 사용해 주세요.')
+            sendMessage(user, 'DB에러가 발생했습니다. 명렁어에 에러가 있나 살펴보시거나 잠시 후에 사용해 주세요.')
         else:
-            bot.sendMessage(user, '성공적으로 추가되었습니다. /noti list로 확인 가능합니다.')
+            sendMessage(user, '성공적으로 추가되었습니다. /noti list로 확인 가능합니다.')
         return True
     if command=='list':
         res=''
@@ -87,16 +99,16 @@ def noti(command, subparam, user):
         c.execute('SELECT * from user WHERE user="%s"'%user)
         for data in c.fetchall():
             row = 'id:'+str(data[0])+', command:'+data[2]+'\n'
-            if len(row+res)>400:
-                bot.sendMessage(user, res)
+            if len(row+res)>MAX_MSG_LENGTH:
+                sendMessage(user, res)
                 res=row
                 printed = True
             else:
                 res+=row
         if res:
-            bot.sendMessage(user, res)
+            sendMessage(user, res)
         elif not printed:
-            bot.sendMessage(user, '조회 결과가 없습니다.')
+            sendMessage(user, '조회 결과가 없습니다.')
         return True
     if command=='remove':
         if not subparam:
@@ -105,9 +117,26 @@ def noti(command, subparam, user):
             c.execute('DELETE FROM user WHERE user="%s" AND id=%s'%(user, subparam))
             conn.commit()
         except:
-            bot.sendMessage(user, 'DB에러가 발생했습니다. 명렁어에 에러가 있나 살펴보시거나 잠시 후에 사용해 주세요.')
+            sendMessage(user, 'DB에러가 발생했습니다. 명렁어에 에러가 있나 살펴보시거나 잠시 후에 사용해 주세요.')
         else:
-            bot.sendMessage(user, '성공적으로 제거되었습니다. /noti list로 확인 가능합니다.')
+            sendMessage(user, '성공적으로 제거되었습니다. /noti list로 확인 가능합니다.')
+        return True
+    if command=='all':
+        res=''
+        printed = False
+        c.execute('SELECT * from user')
+        for data in c.fetchall():
+            row = 'id:'+str(data[0])+', command:'+data[2]+'\n'
+            if len(row+res)>MAX_MSG_LENGTH:
+                sendMessage(user, res)
+                res=row
+                printed = True
+            else:
+                res+=row
+        if res:
+            sendMessage(user, res)
+        elif not printed:
+            sendMessage(user, '조회 결과가 없습니다.')
         return True
     return False
 
@@ -117,7 +146,7 @@ def handle(msg):
 
     content_type, chat_type, chat_id = telepot.glance(msg)
     if content_type != 'text':
-        bot.sendMessage(chat_id, '난 텍스트 이외의 메시지는 처리하지 못해요.')
+        sendMessage(chat_id, '난 텍스트 이외의 메시지는 처리하지 못해요.')
         return
     #pprint(msg)
 
@@ -133,7 +162,7 @@ def handle(msg):
                     res += data[0] + ' : ' + data[1] + '\n'
                 if not res:
                     res = '조회 결과가 없습니다. 구/군 이름으로 검색해 보세요.'
-                bot.sendMessage(chat_id, res)
+                sendMessage(chat_id, res)
                 return
 
         if text.startswith('/howmuch'):
@@ -149,7 +178,7 @@ def handle(msg):
                     filter_param = args[3].encode('utf-8')
                 res_list = howmuch( loc_param, date_param, filter_param )
                 for res in res_list:
-                    bot.sendMessage(chat_id, res)
+                    sendMessage(chat_id, res)
                 return
 
         if text.startswith('/noti'):

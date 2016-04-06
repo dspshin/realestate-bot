@@ -1,21 +1,21 @@
 #!/usr/bin/python
 # coding=utf-8
 import sys
-import time, datetime
+import time
 import sqlite3
 import telepot
 from pprint import pprint
-from datetime import date
 from urllib2 import Request, urlopen
 from urllib import urlencode, quote_plus
 from bs4 import BeautifulSoup
 import re
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 import traceback
 
 key = 'mcGA6xDEsvdIH3sbow%2B7gIBwxcGJC4dTkHt%2Bd7DXJ2pg2Gqq3g6IvU%2BLwFKCiqOQncYX2uI2Kav1yzRw7WO1RA%3D%3D'
 url = 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptTrade?ServiceKey='+key
 ROOT = '/root/git/realestate-bot/'
+MAX_MSG_LENGTH = 400
 
 def howmuch(loc_param, date_param, filter_param):
     res_list = []
@@ -74,7 +74,7 @@ def runNoti(date_param):
                 pass
             else:
                 print str(datetime.now()).split('.')[0], r
-                if len(r+msg)+1>400:
+                if len(r+msg)+1>MAX_MSG_LENGTH:
                     sendMessage( user, msg )
                     msg = r+'\n'
                 else:
