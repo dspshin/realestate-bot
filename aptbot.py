@@ -27,7 +27,8 @@ def sendMessage(id, msg):
         traceback.print_exc(file=sys.stdout)
 
 def help(id):
-    sendMessage(id, '''명령어 사용법:
+    sendMessage(id, '''아파트 매매 정보 알림용 텔레그램 봇입니다.
+명령어 사용법:
 /howmuch 지역코드 년월 필터 : 해당 지역의 월 거래를 확인하며, 필터를 포함하는 정보를 조회합니다.
  (년월이 생략되면 현재 월로 설정되며, 필터가 생략되면 전체 구/군의 정보가 나옵니다.)
  ex. /howmuch 11710 201603
@@ -39,6 +40,9 @@ def help(id):
  ex. /noti add 11710 잠실
 /noti list : 노티 리스트 조회.
 /noti remove 아이디 : 노티 제거.
+
+자매품>
+@officetel_bot : 아파트 매매 봇
 ''')
 
 def howmuch(loc_param, date_param, filter_param):
