@@ -42,7 +42,10 @@ def help(id):
 /noti remove 아이디 : 노티 제거.
 
 자매품>
-@officetel_bot : 연립다세대 매매 봇
+@apart_bot : 아파트 매매 봇
+@officetel_bot : 연립/다세대 매매 봇
+@house_meme_bot : 단독/다가구 매매 봇
+@aptrent_bot : 아파트 전월세 봇
 ''')
 
 def howmuch(loc_param, date_param, filter_param):
