@@ -3,6 +3,42 @@
 from mod_python import apache
 from mod_python import util
 
+from urllib2 import Request, urlopen
+from bs4 import BeautifulSoup
+import re
+import traceback
+
+key = 'mcGA6xDEsvdIH3sbow%2B7gIBwxcGJC4dTkHt%2Bd7DXJ2pg2Gqq3g6IvU%2BLwFKCiqOQncYX2uI2Kav1yzRw7WO1RA%3D%3D'
+url = 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptTrade?ServiceKey='+key
+
+
+def howmuch(loc_param, date_param, dong, apt, pyung):
+    res_list = []
+    res=''
+
+    request = Request(url+'&LAWD_CD='+loc_param+'&DEAL_YMD='+date_param)
+    request.get_method = lambda: 'GET'
+    try:
+        res_body = urlopen(request).read()
+    except UnicodeEncodeError:
+        res = ['오류가 발생했습니다. 명령어를 정확히 사용했는지 확인해 보세요.']
+        return res
+
+    soup = BeautifulSoup(res_body, 'html.parser')
+    items = soup.findAll('item')
+    for item in items:
+        item = item.text.encode('utf-8')
+        item = re.sub('<.*?>', '|', item)
+        parsed = item.split('|')
+        try:
+            #res = parsed[3]+' '+parsed[4]+', '+parsed[7]+'m², '+parsed[9]+'F, '+parsed[1].strip()+'만원\n'
+            res+='<tr><td>'+parsed[3]+' '+parsed[4]+'</td><td>'+parsed[7]+'</td><td>'+parsed[9]+'</td><td>'+parsed[1]+'</td></tr>'
+        except IndexError:
+            continue
+
+    return res
+
+
 html1 = """
 <!DOCTYPE html>
 <html lang="ko">
@@ -50,31 +86,16 @@ html1 = """
           <table class="table table-striped">
             <thead>
               <tr>
-                <th>#</th>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Username</th>
+                <th>아파트명</th>
+                <th>평수(m²)</th>
+                <th>층수(F)</th>
+                <th>거래액(만원)</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>1</td>
-                <td>Mark</td>
-                <td>Otto</td>
-                <td>@mdo</td>
-              </tr>
-              <tr>
-                <td>2</td>
-                <td>Jacob</td>
-                <td>Thornton</td>
-                <td>@fat</td>
-              </tr>
-              <tr>
-                <td>3</td>
-                <td>Larry</td>
-                <td>the Bird</td>
-                <td>@twitter</td>
-              </tr>
+"""
+
+html2="""
             </tbody>
           </table>
         </div>
@@ -103,9 +124,14 @@ html1 = """
 """
 
 def handler(req):
-        req.content_type="Text/html"
-        req.send_http_header()
+  req.content_type="Text/html"
+  req.send_http_header()
+  fs = util.FieldStorage(req)
 
-	req.write(html1)
-	return apache.OK
+  loc_param = fs.getfirst('l', None)
+  date_param = fs.getfirst('d', None)
+  trs = howmuch(loc_param, date_param, None, None, None)
+
+  req.write(html1 + trs + html2)
+  return apache.OK
 
