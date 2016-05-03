@@ -1,3 +1,9 @@
+#-*- coding: utf-8 -*-
+
+from mod_python import apache
+from mod_python import util
+
+html1 = """
 <!DOCTYPE html>
 <html lang="ko">
   <head>
@@ -94,3 +100,12 @@
 
   </body>
 </html>
+"""
+
+def handler(req):
+        req.content_type="Text/html"
+        req.send_http_header()
+
+	req.write(html1)
+	return apache.OK
+
