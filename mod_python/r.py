@@ -7,20 +7,23 @@ from urllib2 import Request, urlopen
 from bs4 import BeautifulSoup
 import re
 import traceback
+import time
 
 key = 'mcGA6xDEsvdIH3sbow%2B7gIBwxcGJC4dTkHt%2Bd7DXJ2pg2Gqq3g6IvU%2BLwFKCiqOQncYX2uI2Kav1yzRw7WO1RA%3D%3D'
 url = 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptTrade?ServiceKey='+key
 
-
 def howmuch(loc_param, date_param, apt, pyung):
     res=''
     data=[]
+    start = time.time()
+
     request = Request(url+'&LAWD_CD='+loc_param+'&DEAL_YMD='+date_param)
     request.get_method = lambda: 'GET'
     try:
       res_body = urlopen(request).read()
     except:
       return '',[], traceback.format_exc().splitlines()[-1]
+    end = time.time()
 
     soup = BeautifulSoup(res_body, 'html.parser')
     items = soup.findAll('item')
@@ -35,23 +38,26 @@ def howmuch(loc_param, date_param, apt, pyung):
               data.append( (parsed[2],parsed[5],parsed[6], parsed[1]) )
         except IndexError:
             continue
-    return res, data, None
+
+    return res, data, None, int((end-start)*1000)
 
 def howmuch2(loc_param, date_param, apt, pyung, to_param):
     res=''
     data=[]
+    time=0
 
     if to_param:
       for m in range(int(date_param), int(to_param)+1):
         d = m%100
         if d<1 or d>12:
           continue
-        r,d,e = howmuch(loc_param, str(m), apt, pyung)
+        r,d,e,t = howmuch(loc_param, str(m), apt, pyung)
+        time+=t
         if e:
-          return '',[],e
+          return '',[],e,time
         res+=r
         data.extend(d)
-      return res, data, None
+      return res, data, None, time
 
     return howmuch(loc_param, date_param, apt, pyung)
 
@@ -143,7 +149,7 @@ def handler(req):
   apt = fs.getfirst('a',None)
   pyung = fs.getfirst('p',None)
   date_to = fs.getfirst('t', None)
-  trs, data, error = howmuch2(loc_param, date_param, apt, pyung, date_to)
+  trs, data, error, elapsed = howmuch2(loc_param, date_param, apt, pyung, date_to)
 
   prices = []
   for d in data:
@@ -168,7 +174,7 @@ def handler(req):
 
     <div class="container theme-showcase">
       <div class="well">
-        <p>개인서버라 속도가 굉장히 느리고, 거래정보를 얻고 있는 data.go.kr이 502 proxy를 에러를 내는 경우가 굉장히 많습니다. 양해 부탁드립니다.</p>
+        <p>개인서버라 속도가 느리고, 거래정보를 얻고 있는 data.go.kr이 아래 줄과 같이 매우 느리며 502 proxy를 에러를 내는 경우가 굉장히 많습니다. 양해 부탁드립니다.<br/>현재 페이지의 api단 elapsed time : %s ms</p>
       </div>
     </div>
 
@@ -292,7 +298,7 @@ def handler(req):
 
   </body>
 </html>
-"""%(apt, prices, error, nodata)
+"""%(elapsed, apt, prices, error, nodata)
 
   req.write(html1 + trs + html2)
   return apache.OK
