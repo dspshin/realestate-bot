@@ -155,6 +155,10 @@ def handler(req):
     price = d[3].replace(",","").strip()
     prices.append("[Date.UTC("+d[0]+","+d[1]+","+day+"),"+price+"]")
 
+  nodata=1
+  if trs:
+    nodata=0
+
   prices = str(prices).replace("'","")
   html2="""
             </tbody>
@@ -278,12 +282,17 @@ def handler(req):
       if (error !== "None") {
         alert(error);
       }
+
+      var nodata=%s;
+      if (nodata) {
+        alert("해당월의 거래 데이터가 없습니다.");
+      }
     });
     </script>
 
   </body>
 </html>
-"""%(apt, prices, error)
+"""%(apt, prices, error, nodata)
 
   req.write(html1 + trs + html2)
   return apache.OK
