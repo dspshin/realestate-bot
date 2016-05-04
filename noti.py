@@ -38,7 +38,7 @@ def howmuch(loc_param, date_param, filter_param):
         except IndexError:
             row = item.replace('|', ',')
         #add link
-        row+="r.fun25.co.kr/r/r.py?l="+loc_param+"&p="+parsed[7]+"&a="+parsed[4]+"&d="+date_param+"\n"
+        row+="r.fun25.co.kr/r/r.py?l="+loc_param.encode('ascii','ignore')+"&p="+parsed[7]+"&a="+parsed[4].replace(" ","%20")+"&d="+date_param.encode('ascii','ignore')+"\n"
 
         if filter_param and row.find(filter_param)<0:
             row = ''
