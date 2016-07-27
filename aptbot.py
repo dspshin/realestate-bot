@@ -131,10 +131,27 @@ def noti(command, subparam, user):
         else:
             sendMessage(user, '성공적으로 제거되었습니다. /noti list로 확인 가능합니다.')
         return True
-    if command=='all':
+    if command=='all' and chat_id==68399557:
         res=''
         printed = False
-        c.execute('SELECT * from user')
+        c.execute('SELECT * FROM user')
+        for data in c.fetchall():
+            row = 'id:'+str(data[0])+',user:'+data[1]+',command:'+data[2]+'\n'
+            if len(row+res)>MAX_MSG_LENGTH:
+                sendMessage(user, res)
+                res=row
+                printed = True
+            else:
+                res+=row
+        if res:
+            sendMessage(user, res)
+        elif not printed:
+            sendMessage(user, '조회 결과가 없습니다.')
+        return True
+    if command=='tail' and chat_id==68399557:
+        res=''
+        printed = False
+        c.execute('SELECT * FROM user ORDER BY id DESC LIMIT 10')
         for data in c.fetchall():
             row = 'id:'+str(data[0])+',user:'+data[1]+',command:'+data[2]+'\n'
             if len(row+res)>MAX_MSG_LENGTH:
