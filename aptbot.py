@@ -131,7 +131,7 @@ def noti(command, subparam, user):
         else:
             sendMessage(user, '성공적으로 제거되었습니다. /noti list로 확인 가능합니다.')
         return True
-    if command=='all' and chat_id==68399557:
+    if command=='all' and user==68399557:
         res=''
         printed = False
         c.execute('SELECT * FROM user')
@@ -148,7 +148,7 @@ def noti(command, subparam, user):
         elif not printed:
             sendMessage(user, '조회 결과가 없습니다.')
         return True
-    if command=='tail' and chat_id==68399557:
+    if command=='tail' and user==68399557:
         res=''
         printed = False
         c.execute('SELECT * FROM user ORDER BY id DESC LIMIT 10')
