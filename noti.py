@@ -34,11 +34,12 @@ def howmuch(loc_param, date_param, filter_param):
         item = re.sub('<.*?>', '|', item)
         parsed = item.split('|')
         try:
-            row = parsed[2]+'/'+parsed[5]+'/'+parsed[6]+', '+parsed[3]+' '+parsed[4]+', '+parsed[7]+'m², '+parsed[9]+'F, '+parsed[1].strip()+'만원\n'
+            #row = parsed[2]+'/'+parsed[5]+'/'+parsed[6]+', '+parsed[3]+' '+parsed[4]+', '+parsed[7]+'m², '+parsed[9]+'F, '+parsed[1].strip()+'만원\n'
+            row = parsed[2]+'/'+parsed[6]+'/'+parsed[7]+', '+parsed[4]+' '+parsed[5]+', '+parsed[8]+'m², '+parsed[11]+'F, '+parsed[1].strip()+'만원\n'
         except IndexError:
             row = item.replace('|', ',')
         #add link
-        row+="r.fun25.co.kr/r/r.py?l="+loc_param.encode('ascii','ignore')+"&p="+parsed[7]+"&a="+parsed[4].replace(" ","%20")+"&d="+date_param.encode('ascii','ignore')+"\n"
+        row+="r.fun25.co.kr/r/r.py?l="+loc_param.encode('ascii','ignore')+"&p="+parsed[4]+"&a="+parsed[5].replace(" ","%20")+"&d="+date_param.encode('ascii','ignore')+"\n"
 
         if filter_param and row.find(filter_param)<0:
             row = ''
