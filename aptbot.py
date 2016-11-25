@@ -68,7 +68,7 @@ def howmuch(loc_param, date_param, filter_param):
         parsed = item.split('|')
         #print parsed
         try:
-            row = parsed[2]+'/'+parsed[6]+'/'+parsed[7]+', '+parsed[4]+' '+parsed[5]+', '+parsed[8]+'m², '+parsed[11]+'F, '+parsed[1].strip()+'만원\n'
+            row = parsed[3]+'/'+parsed[6]+'/'+parsed[7]+', '+parsed[4]+' '+parsed[5]+', '+parsed[8]+'m², '+parsed[11]+'F, '+parsed[1].strip()+'만원\n'
             #print row
         except IndexError:
             row = item.replace('|', ',')

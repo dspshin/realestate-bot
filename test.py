@@ -1,6 +1,7 @@
 from urllib2 import Request, urlopen
 from urllib import urlencode, quote_plus
 import sys
+import re
 from bs4 import BeautifulSoup
 
 key = 'mcGA6xDEsvdIH3sbow%2B7gIBwxcGJC4dTkHt%2Bd7DXJ2pg2Gqq3g6IvU%2BLwFKCiqOQncYX2uI2Kav1yzRw7WO1RA%3D%3D'
@@ -21,3 +22,11 @@ soup = BeautifulSoup(res, 'html.parser')
 items = soup.findAll('item')
 for i,item in enumerate(items):
     print i, item.text
+
+    item = item.text.encode('utf-8')
+    item = re.sub('<.*?>', '|', item)
+    parsed = item.split('|')
+    print parsed
+    row = parsed[3]+'/'+parsed[6]+'/'+parsed[7]+', '+parsed[4]+' '+parsed[5]+', '+parsed[8]+'m, '+parsed[11]+'F, '+parsed[1].strip()+'\n'
+    print row
+    print
