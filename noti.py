@@ -50,6 +50,7 @@ def howmuch(loc_param, date_param, filter_param):
 def sendMessage(user,msg):
     try:
         bot.sendMessage(user,msg)
+        time.sleep(0.3)
     except:
         traceback.print_exc(file=sys.stdout)
 
